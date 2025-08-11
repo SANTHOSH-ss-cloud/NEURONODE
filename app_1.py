@@ -432,13 +432,13 @@ def main():
             now = datetime.now()
             if (now - last_plot_time).total_seconds() >= PLOT_UPDATE_INTERVAL:
                 fig = create_realtime_plot(st.session_state.buffer)
-                plot_area.plotly_chart(fig, use_container_width=True)
+                plot_area.plotly_chart(fig, use_container_width=True, key=f"realtime_plot_{int(time.time()*1000)}")
 
                 # PSD for channel 1 (approx)
                 latest = st.session_state.buffer[-1] if st.session_state.buffer else None
                 if latest:
                     psd_fig = create_psd_plot(latest.channels[:128])
-                    psd_area.plotly_chart(psd_fig, use_container_width=True)
+                    psd_area.plotly_chart(psd_fig, use_container_width=True, key=f"psd_plot_{int(time.time()*1000)}")
 
                     raw_area.code(f"Time: {latest.timestamp.strftime('%H:%M:%S')}\nChannels: {latest.channels}\nRaw: {latest.raw_data}")
 
