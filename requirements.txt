@@ -1,0 +1,11 @@
+# Core
+streamlit
+pyserial
+plotly
+pandas
+numpy
+google-generativeai
+
+# Optional
+scipy          # For more advanced signal processing
+matplotlib     # For additional plotting/debug
