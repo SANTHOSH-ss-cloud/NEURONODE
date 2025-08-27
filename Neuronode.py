@@ -278,7 +278,7 @@ def main():
             st.warning("⚠️ Gemini API: Not configured (set GEMINI_API_KEY in .env)")
 
         ports = st.session_state.serial.get_available_ports()
-        port = st.selectbox("Serial Port", ["Demo Mode"] + ports, index=0)
+        port = st.selectbox("Serial Port", ["Demo Mode"] +["COM3"]+["COM4"]+ ports, index=0)
         baud = st.selectbox("Baud Rate", [115200, 57600, 38400, 9600], index=0)
 
         col_a, col_b = st.columns(2)
