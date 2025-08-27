@@ -108,13 +108,25 @@ class SerialDataManager:
 
     def get_available_ports(self) -> List[str]:
         try:
-            return [p.device for p in serial.tools.list_ports.comports()]
-        except Exception:
+            ports = []
+            for port in serial.tools.list_ports.comports():
+                ports.append(f"{port.device} - {port.description}")
+            return ports
+        except Exception as e:
+            st.error(f"Error detecting ports: {e}")
             return []
 
-    def start(self, port: str, baud: int = BAUD_RATE) -> bool:
+    def extract_port_name(self, port_display: str) -> str:
+        """Extract just the port name from the display string"""
+        return port_display.split(" - ")[0] if " - " in port_display else port_display
+
+    def start(self, port_display: str, baud: int = BAUD_RATE) -> bool:
         try:
             self.stop()  # in case a previous run is hanging
+            
+            # Extract actual port name from display string
+            port = self.extract_port_name(port_display)
+            
             self.serial_connection = serial.Serial(
                 port=port,
                 baudrate=baud,
@@ -277,9 +289,24 @@ def main():
         else:
             st.warning("⚠️ Gemini API: Not configured (set GEMINI_API_KEY in .env)")
 
-        ports = st.session_state.serial.get_available_ports()
-        port = st.selectbox("Serial Port", ["Demo Mode"] +["COM3"]+["COM4"]+ ports, index=0)
+        # Get available ports and show them with descriptions
+        available_ports = st.session_state.serial.get_available_ports()
+        
+        if available_ports:
+            st.info(f"📋 Found {len(available_ports)} available port(s)")
+            port_options = ["Demo Mode"] + available_ports
+        else:
+            st.warning("⚠️ No serial ports detected")
+            port_options = ["Demo Mode"]
+        
+        port = st.selectbox("Serial Port", port_options, index=0)
         baud = st.selectbox("Baud Rate", [115200, 57600, 38400, 9600], index=0)
+
+        # Show detected ports info
+        if available_ports:
+            with st.expander("🔍 Detected Ports"):
+                for p in available_ports:
+                    st.text(p)
 
         col_a, col_b = st.columns(2)
         with col_a:
@@ -292,7 +319,8 @@ def main():
                     ok = st.session_state.serial.start(port, baud)
                     if ok:
                         st.session_state.demo_mode = False
-                        st.toast(f"🔌 ESP32 connected on {port}", icon="🔌")
+                        port_name = st.session_state.serial.extract_port_name(port)
+                        st.toast(f"🔌 ESP32 connected on {port_name}", icon="🔌")
                     else:
                         st.session_state.demo_mode = True
 
@@ -307,7 +335,7 @@ def main():
         conn_ok = st.session_state.serial.connected() if is_live else False
         st.markdown("---")
         st.markdown(f"**Mode:** {'🟢 Live (ESP32)' if is_live else '🟣 Demo'}")
-        st.markdown(f"**ESP32:** {('✅ Connected' if conn_ok else '—') if is_live else '—'}")
+        st.markdown(f"**ESP32:** {('✅ Connected' if conn_ok else '❌ Disconnected') if is_live else '—'}")
         st.markdown(f"**Last data:** {st.session_state.serial.last_data_time.strftime('%H:%M:%S') if st.session_state.serial.last_data_time else '—'}")
         st.markdown("---")
 
