@@ -1,0 +1,17 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class ColorChange {
+    public static void main(String[] args) {
+        JFrame f = new JFrame("Color Changer");
+        JPanel p = new JPanel();
+        JButton b = new JButton("Change Color");
+        b.addActionListener(e -> p.setBackground(Color.CYAN));
+        p.add(b);
+        f.add(p);
+        f.setSize(250, 150);
+        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        f.setVisible(true);
+    }
+}
